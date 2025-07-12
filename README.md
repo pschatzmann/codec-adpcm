@@ -18,8 +18,8 @@ This library can be used directly with cmake or as an Arduino library. However I
 # Class Documentation
 
 - [Class and ID Overview](https://github.com/pschatzmann/adpcm/wiki/Codecs-Overview)
-- [Encoder](https://pschatzmann.github.io/adpcm/docs/html/classadpcm__ffmpeg_1_1ADPCMEncoder.html)
-- [Decoder](https://pschatzmann.github.io/adpcm/docs/html/classadpcm__ffmpeg_1_1ADPCMDecoder.html)
+- [Encoder](https://pschatzmann.github.io/codec-adpcm/docs/html/classadpcm__ffmpeg_1_1ADPCMEncoder.html)
+- [Decoder](https://pschatzmann.github.io/codec-adpcm/docs/html/classadpcm__ffmpeg_1_1ADPCMDecoder.html)
 
 
 
