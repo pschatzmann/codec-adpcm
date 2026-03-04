@@ -119,6 +119,28 @@ class ADPCMDecoder : public ADPCMCodec {
     adpcm_flush();
   }
 
+  /// @brief Convert decoded int16_t frame samples to signed 8-bit PCM.
+  /// @param frame decoded frame returned by decode()
+  /// @param output destination buffer; must hold frame.nb_samples * channels() elements
+  void toInt8(AVFrame &frame, int8_t *output) {
+    int16_t *src = (int16_t *)frame.data[0];
+    int count = frame.nb_samples * channels();
+    for (int j = 0; j < count; j++) {
+      output[j] = (int8_t)(src[j] >> 8);
+    }
+  }
+
+  /// @brief Convert decoded int16_t frame samples to unsigned 8-bit PCM.
+  /// @param frame decoded frame returned by decode()
+  /// @param output destination buffer; must hold frame.nb_samples * channels() elements
+  void toUInt8(AVFrame &frame, uint8_t *output) {
+    int16_t *src = (int16_t *)frame.data[0];
+    int count = frame.nb_samples * channels();
+    for (int j = 0; j < count; j++) {
+      output[j] = (uint8_t)((src[j] >> 8) + 128);
+    }
+  }
+
  protected:
   enum DataSource { Undefined, FromFrame, FromExtended };
   AVPacket packet;

@@ -67,6 +67,24 @@ class ADPCMEncoder : public ADPCMCodec {
     return result;
   }
 
+  /// @brief Encode signed 8-bit PCM samples. Converts to 16-bit internally.
+  AVPacket &encode(int8_t *data, size_t sampleCount) {
+    encode_8bit_buffer.resize(sampleCount);
+    for (size_t j = 0; j < sampleCount; j++) {
+      encode_8bit_buffer[j] = (int16_t)data[j] << 8;
+    }
+    return encode(&encode_8bit_buffer[0], sampleCount);
+  }
+
+  /// @brief Encode unsigned 8-bit PCM samples. Converts to 16-bit internally.
+  AVPacket &encode(uint8_t *data, size_t sampleCount) {
+    encode_8bit_buffer.resize(sampleCount);
+    for (size_t j = 0; j < sampleCount; j++) {
+      encode_8bit_buffer[j] = ((int16_t)data[j] - 128) << 8;
+    }
+    return encode(&encode_8bit_buffer[0], sampleCount);
+  }
+
   virtual bool is_trellis() { return false; }
 
   int blockAlign() { return avctx.block_align;}
@@ -77,6 +95,7 @@ class ADPCMEncoder : public ADPCMCodec {
   int16_t *extended_data[2] = {0};
   ADPCMVector<uint8_t> av_packet_data;
   ADPCMVector<ADPCMVector<int16_t>> frame_extended_data_vectors;
+  ADPCMVector<int16_t> encode_8bit_buffer;
   // encoding data
   int st, pkt_size, ret;
   const int16_t *samples;
