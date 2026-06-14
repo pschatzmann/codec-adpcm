@@ -62,7 +62,7 @@ class ADPCMVector {
     }
     iterator operator+(int offset) {
       pos_ += offset;
-      return iterator(ptr + offset, offset);
+      return iterator(ptr + offset, pos_);
     }
     bool operator==(iterator it) { return ptr == it.getPtr(); }
     bool operator<(iterator it) { return ptr < it.getPtr(); }
@@ -178,7 +178,7 @@ class ADPCMVector {
   void push_front(T &value) {
     resize_internal(len + 1, true);
     // memmove(p_data,p_data+1,len*sizeof(T));
-    for (int j = len; j >= 0; j--) {
+    for (int j = len - 1; j >= 0; j--) {
       p_data[j + 1] = p_data[j];
     }
     p_data[0] = value;
@@ -188,7 +188,7 @@ class ADPCMVector {
   void push_front(T &&value) {
     resize_internal(len + 1, true);
     // memmove(p_data,p_data+1,len*sizeof(T));
-    for (int j = len; j >= 0; j--) {
+    for (int j = len - 1; j >= 0; j--) {
       p_data[j + 1] = p_data[j];
     }
     p_data[0] = value;
@@ -242,9 +242,10 @@ class ADPCMVector {
     return p_data[index];
   }
 
-  T &operator[](const int index) const {    
+  T &operator[](const int index) const {
+    assert(p_data != nullptr);
     assert(index < len);
-    return p_data[index]; 
+    return p_data[index];
   }
 
   bool resize(int newSize, T value) {
@@ -336,7 +337,7 @@ class ADPCMVector {
   }
 
   void clearContent(){
-    memset(p_data, 0, size());
+    memset(p_data, 0, size() * sizeof(T));
   }
 
  protected:

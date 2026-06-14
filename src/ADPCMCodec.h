@@ -1,11 +1,11 @@
 #pragma once
 #include "adpcm-ffmpeg/adpcm.h"
 #include "adpcm-ffmpeg/bytestream.h"
+#include "adpcm-ffmpeg/config-adpcm.h"
 #include "string.h"
 #include "stddef.h"
 #include "ADPCMVector.h"
 
-#define ADAPCM_DEFAULT_BLOCK_SIZE 128
 
 #pragma GCC diagnostic ignored "-Wcomment"
 #pragma GCC diagnostic ignored "-Wsign-compare"

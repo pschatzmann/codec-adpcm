@@ -127,8 +127,8 @@ class ADPCMDecoder : public ADPCMCodec {
   bool is_frame_data = true;
   ADPCMVector<int16_t> frame_data_vector;
   ADPCMVector<ADPCMVector<int16_t>> frame_extended_data_vectors;
-  int16_t *extended_data[2] = {NULL};
-  uint8_t *data[AV_NUM_DATA_POINTERS] = {NULL};
+  int16_t *extended_data[ADPCM_MAX_CHANNELS]{};
+  uint8_t *data[AV_NUM_DATA_POINTERS]{};
   // decoding
   const uint8_t *buf;
   int buf_size;

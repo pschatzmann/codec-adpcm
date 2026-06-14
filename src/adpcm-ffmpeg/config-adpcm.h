@@ -22,9 +22,16 @@
 #define AV_INPUT_BUFFER_PADDING_SIZE 64
 
 /// The AV_CODEC_ID_ADPCM_IMA_QT seems to be broken, so we deactivate it
-#define ENABLE_BROKEN_CODECS true
+#define ENABLE_BROKEN_CODECS false
 
 /// Automatic name space support
 #define ADPCM_ADD_NAMESPACE false
 
+/// The default block size for encoding. This is not the same as the frame size, which is defined by the codec and can be different from the block size.
+#define ADAPCM_DEFAULT_BLOCK_SIZE 128
 
+// largest channel count used by any supported codec (e.g. ADPCM_THP/DAT4)
+#define ADPCM_MAX_CHANNELS 14
+
+// The periodic interval (in samples) at which the trellis encoder commits its best-path decisions and reclaims memory
+#define FREEZE_INTERVAL 128

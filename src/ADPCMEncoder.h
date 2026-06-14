@@ -3,7 +3,6 @@
 #include "ADPCMCodec.h"
 #include "adpcm-ffmpeg/put_bits.h"
 
-#define FREEZE_INTERVAL 128
 
 namespace adpcm_ffmpeg {
 
