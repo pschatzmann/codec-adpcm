@@ -7,13 +7,15 @@ if(ESP_PLATFORM)
     )
 else()
     # set the project name
-    project(adpcm_ffmpeg)
+    project(codec-adpcm)
 
     # lots of warnings and all warnings as errors
     # add_compile_options(-Wall -Wextra )
+    
+    add_library(codec-adpcm INTERFACE)
+    target_include_directories(adpcm INTERFACE src)
 
     # define location for header files
-    add_subdirectory("src")
     add_subdirectory("tests/sine")
 endif()
 
