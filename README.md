@@ -1,5 +1,11 @@
 # ADPCM Audio Codec Library
 
+[![Arduino Library](https://img.shields.io/badge/Arduino-Library-blue.svg)](https://www.arduino.cc/reference/en/libraries/)
+[![Zephyr Library](https://img.shields.io/badge/Zephyr-Library-blue.svg)](https://github.com/pschatzmann/adpcm)
+[![IDF Component](https://img.shields.io/badge/IDF-Component-blue.svg)](https://github.com/pschatzmann/adpcm)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+
 ADPCM (Adaptive Differential Pulse Code Modulation) is a __lossy audio codec__ with a good compression ratio and very low requirements in terms of memory and cpu for both the decoding and encoding. It is also purely based on integer arithemtic. It has lost it's imporance on the desktop, but it is still one of the best codecs to be used on microcontrollers.
 
 Unfortunately it is not standardized and there are many alternative implementations which are incompatible between each other.
