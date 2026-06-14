@@ -13,7 +13,7 @@ else()
     # add_compile_options(-Wall -Wextra )
     
     add_library(codec-adpcm INTERFACE)
-    target_include_directories(adpcm INTERFACE src)
+    target_include_directories(codec-adpcm INTERFACE src)
 
     # define location for header files
     add_subdirectory("tests/sine")
