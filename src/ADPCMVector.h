@@ -1,7 +1,4 @@
 #pragma once
-#ifdef USE_INITIALIZER_LIST
-#include "InitializerList.h"
-#endif
 #include <assert.h>
 
 namespace adpcm_ffmpeg {
@@ -77,18 +74,6 @@ class ADPCMVector {
     size_t operator-(iterator it) { return (ptr - it.getPtr()); }
   };
 
-#ifdef USE_INITIALIZER_LIST
-
-  /// support for initializer_list
-  ADPCMVector(std::initializer_list<T> iniList) {
-    resize(iniList.size());
-    int pos = 0;
-    for (auto &obj : iniList) {
-      p_data[pos++] = obj;
-    }
-  }
-
-#endif
 
   /// Default constructor: size 0: The len defines the capacity
   ADPCMVector(size_t len = 0) {
