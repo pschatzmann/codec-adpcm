@@ -35,12 +35,15 @@ class ADPCMDecoder : public ADPCMCodec {
     // if frame size has not been defined, get it from encoder
     int frame_size = frameSize();
     if (frame_size == 0) {
-      ADPCMEncoder &enc = *ADPCMEncoderFactory::create(codecID());
-      enc.begin(sampleRate, channels);
-      setFrameSize(enc.frameSize());
-      setBlockSize(enc.blockSize());
-      frame_size = frameSize();
-      avctx.block_align = enc.blockAlign();
+      ADPCMEncoder *enc = ADPCMEncoderFactory::create(codecID());
+      if (enc != nullptr) {
+        enc->begin(sampleRate, channels);
+        setFrameSize(enc->frameSize());
+        setBlockSize(enc->blockSize());
+        frame_size = frameSize();
+        avctx.block_align = enc->blockAlign();
+        delete enc;
+      }
     }
 
     assert(frame_size != 0);
@@ -2472,7 +2475,7 @@ class DecoderADPCM_SBPRO_4 : public DecoderADPCM_SBPRO_X {
 
 class DecoderADPCM_THP : public ADPCMDecoder {
  public:
-  DecoderADPCM_THP() { DecoderADPCM_THP(AV_CODEC_ID_ADPCM_THP); }
+  DecoderADPCM_THP() : DecoderADPCM_THP(AV_CODEC_ID_ADPCM_THP) {}
   DecoderADPCM_THP(AVCodecID id) {
     setCodecID(id);
     assert(id == AV_CODEC_ID_ADPCM_THP || id == AV_CODEC_ID_ADPCM_THP_LE);

@@ -315,10 +315,10 @@ class ADPCMVector {
   }
 
   void reset() {
-    clear();
-    shrink_to_fit();
-    deleteArray(p_data, size());  // delete [] this->p_data;
+    deleteArray(p_data, bufferLen);
     p_data = nullptr;
+    len = 0;
+    bufferLen = 0;
   }
 
   void clearContent(){

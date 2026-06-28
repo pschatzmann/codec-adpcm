@@ -56,7 +56,8 @@ class ADPCMEncoder : public ADPCMCodec {
     }
 
     int got_packet_ptr = 0;
-    av_packet_data.resize(sampleCount);
+    int buf_size = sampleCount > (size_t)avctx.block_align ? sampleCount : avctx.block_align;
+    av_packet_data.resize(buf_size);
     result.data = &av_packet_data[0];
 
     int rc = adpcm_encode_frame(&result, &frame, &got_packet_ptr);
@@ -256,7 +257,7 @@ class ADPCMEncoderTrellis : public ADPCMEncoder {
  public:
   bool is_trellis() { return avctx.trellis; }
   void set_trellis(bool flag) { avctx.trellis = flag;}
-  bool store_node(int STEP_INDEX) {
+  void store_node(int STEP_INDEX, int cur_nibble) {
     int d;
     uint32_t ssd;
     int pos;
@@ -271,26 +272,16 @@ class ADPCMEncoderTrellis : public ADPCMEncoder {
                             * simpler, avoiding this check, but it's slower on \
                             * x86 32 bit at the moment. */
     if (ssd < nodes[j]->ssd) {
-      /* Collapse any two states with the same previous
-       * sample value. One could also distinguish states by step and by 2nd
-       * to last sample, but the effects of that are negligible.
-       * Since nodes in the previous generation are iterated through a heap,
-       * they're roughly ordered from better to worse, but not strictly ordered.
-       * Therefore, an earlier node with the same sample value is better in most
-       * cases (and thus the current is skipped), but not strictly
-       * in all cases. Only skipping samples where ssd >= ssd of the earlier
-       * node with the same sample gives slightly worse quality, though, for
-       * some reason. */
-      return true;
+      return;
     }
     h = &hash[(uint16_t)dec_sample];
-    if (*h == generation) return true;
+    if (*h == generation) return;
     if (heap_pos < frontier) {
       pos = heap_pos++;
     } else { /* Try to replace one of the leaf nodes with the new          \
               * one, but try a different slot each time. */
       pos = (frontier >> 1) + (heap_pos & ((frontier >> 1) - 1));
-      if (ssd > nodes_next[pos]->ssd) return true;
+      if (ssd > nodes_next[pos]->ssd) return;
       heap_pos++;
     }
     *h = generation;
@@ -305,7 +296,7 @@ class ADPCMEncoderTrellis : public ADPCMEncoder {
     u->step = STEP_INDEX;
     u->sample2 = nodes[j]->sample1;
     u->sample1 = dec_sample;
-    paths[u->path].nibble = nibble;
+    paths[u->path].nibble = cur_nibble;
     paths[u->path].prev =
         nodes[j]->path; /* Sift the newly inserted node up in the heap to \
                          * restore the heap property. */
@@ -315,10 +306,9 @@ class ADPCMEncoderTrellis : public ADPCMEncoder {
       FFSWAP(TrellisNode *, nodes_next[parent], nodes_next[pos]);
       pos = parent;
     }
-    return false;
   }
 
-  void loop_nodes(int16_t STEP_TABLE, int STEP_INDEX) {
+  void loop_nodes(int16_t STEP_TABLE, int step) {
     const int predictor = nodes[j]->sample1;
     const int div = (sample - predictor) * 4 / STEP_TABLE;
     int nmin = av_clip(div - range, -7, 6);
@@ -326,10 +316,18 @@ class ADPCMEncoderTrellis : public ADPCMEncoder {
     if (nmin <= 0) nmin--; /* distinguish -0 from +0 */
     if (nmax < 0) nmax--;
     for (nidx = nmin; nidx <= nmax; nidx++) {
-      const int nibble = nidx < 0 ? 7 - nidx : nidx;
+      nibble = nidx < 0 ? 7 - nidx : nidx;
       dec_sample =
           predictor + (STEP_TABLE * ff_adpcm_yamaha_difflookup[nibble]) / 8;
-      store_node(STEP_INDEX);
+      if (version == AV_CODEC_ID_ADPCM_IMA_WAV ||
+          version == AV_CODEC_ID_ADPCM_IMA_QT ||
+          version == AV_CODEC_ID_ADPCM_IMA_AMV ||
+          version == AV_CODEC_ID_ADPCM_SWF) {
+        store_node(av_clip(step + ff_adpcm_index_table[nibble], 0, 88), nibble);
+      } else {
+        store_node(av_clip((step * ff_adpcm_yamaha_indexscale[nibble]) >> 8,
+                           127, 24576), nibble);
+      }
     }
   }
 
@@ -391,20 +389,16 @@ class ADPCMEncoderTrellis : public ADPCMEncoder {
           for (nidx = nmin; nidx <= nmax; nidx++) {
             nibble = nidx & 0xf;
             dec_sample = predictor + nidx * step;
-
-            while (store_node(
-                FFMAX(16, (ff_adpcm_AdaptationTable[nibble] * step) >> 8)));
+            store_node(
+                FFMAX(16, (ff_adpcm_AdaptationTable[nibble] * step) >> 8), nibble);
           }
         } else if (version == AV_CODEC_ID_ADPCM_IMA_WAV ||
                    version == AV_CODEC_ID_ADPCM_IMA_QT ||
                    version == AV_CODEC_ID_ADPCM_IMA_AMV ||
                    version == AV_CODEC_ID_ADPCM_SWF) {
-          loop_nodes(ff_adpcm_step_table[step],
-                     av_clip(step + ff_adpcm_index_table[nibble], 0, 88));
+          loop_nodes(ff_adpcm_step_table[step], step);
         } else {  // AV_CODEC_ID_ADPCM_YAMAHA
-          loop_nodes(step,
-                     av_clip((step * ff_adpcm_yamaha_indexscale[nibble]) >> 8,
-                             127, 24576));
+          loop_nodes(step, step);
         }
       }
 
@@ -469,11 +463,11 @@ class ADPCMEncoderTrellis : public ADPCMEncoder {
   int pathn = 0, froze = -1, i, j, k, generation = 0;
   uint8_t *hash;
   int dec_sample = 0;
-  int sample;
-  int nibble;
-  int nidx;
-  int range;
-  int heap_pos;
+  int sample = 0;
+  int nibble = 0;
+  int nidx = 0;
+  int range = 0;
+  int heap_pos = 0;
 };
 
 class EncoderADPCM_IMA_WAV : public ADPCMEncoderTrellis {

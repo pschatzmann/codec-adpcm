@@ -4,6 +4,7 @@
 #include "adpcm-ffmpeg/config-adpcm.h"
 #include "string.h"
 #include "stddef.h"
+#include "stdarg.h"
 #include "ADPCMVector.h"
 
 
@@ -95,7 +96,10 @@ class ADPCMCodec {
 
   //  error message about missing feature
   void avpriv_request_sample(void *avc, const char *msg, ...) {
-    printf("%s", msg);
+    va_list ap;
+    va_start(ap, msg);
+    vprintf(msg, ap);
+    va_end(ap);
   }
 };
 
