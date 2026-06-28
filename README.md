@@ -29,6 +29,19 @@ This library can be used directly with cmake or as an Arduino library. However I
 
 
 
+# Trellis Encoding
+
+The encoders that inherit from `ADPCMEncoderTrellis` (IMA_WAV, IMA_QT, IMA_AMV, SWF, MS, YAMAHA) support an optional trellis search algorithm. Standard ADPCM encodes each sample greedily, while trellis explores multiple encoding paths simultaneously and picks the one that minimizes total distortion. This produces better audio quality at the cost of more CPU and memory.
+
+```cpp
+#include "ADPCM.h"
+
+EncoderADPCM_IMA_WAV encoder;
+encoder.set_trellis(true);   // enables with value 1 (2 candidates)
+```
+
+Without trellis (the default), encoding is faster but produces slightly more distortion. For real-time encoding on microcontrollers, you would typically leave trellis off. For offline or quality-critical encoding, set it to 2-4.
+
 # Examples
 
 The following examples are encoding and decoding a sine tone:
