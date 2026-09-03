@@ -37,6 +37,11 @@ class ADPCMDecoder : public ADPCMCodec {
     if (frame_size == 0) {
       ADPCMEncoder *enc = ADPCMEncoderFactory::create(codecID());
       if (enc != nullptr) {
+        // preserve the block size that was already configured on this
+        // decoder (e.g. from a WAV 'fmt ' chunk's block_align) instead of
+        // letting the freshly created encoder's default block size
+        // (ADAPCM_DEFAULT_BLOCK_SIZE) silently overwrite it below
+        enc->setBlockSize(blockSize());
         enc->begin(sampleRate, channels);
         setFrameSize(enc->frameSize());
         setBlockSize(enc->blockSize());
